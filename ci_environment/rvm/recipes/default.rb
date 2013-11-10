@@ -34,6 +34,10 @@ include_recipe "libreadline"
 include_recipe "libxml"
 include_recipe "libssl"
 include_recipe "libncurses"
+include_recipe "sqlite"
+node[:rvm][:pkg_requirements].each do |r|
+  package r
+end
 
 bash "install RVM" do
   user        node.travis_build_environment.user
@@ -41,7 +45,7 @@ bash "install RVM" do
   environment Hash['HOME' => node.travis_build_environment.home, 'rvm_user_install_flag' => '1']
   code        <<-SH
   curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer -o /tmp/rvm-installer &&
-  bash /tmp/rvm-installer #{node.rvm.version}
+  bash /tmp/rvm-installer #{node.rvm.version} --without-gems=rubygems-bundler
   rm   /tmp/rvm-installer
   ~/.rvm/bin/rvm version
   SH

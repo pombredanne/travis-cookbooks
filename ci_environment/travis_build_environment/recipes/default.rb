@@ -57,6 +57,7 @@ template "/etc/hosts" do
   mode 0644
   variables(:hostname => hostname)
   source "etc/hosts.erb"
+  not_if { !node[:travis_build_environment][:update_hosts] }
 end
 
 template "/etc/hostname" do
@@ -65,6 +66,7 @@ template "/etc/hostname" do
   mode 0644
   variables(:hostname => hostname)
   source "etc/hostname.erb"
+  not_if { !node[:travis_build_environment][:update_hosts] }
 end
 
 execute "hostname #{hostname}" do

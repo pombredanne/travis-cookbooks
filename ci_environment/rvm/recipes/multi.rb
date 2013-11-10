@@ -27,7 +27,9 @@ include_recipe "rvm"
 # For rvm::multi we assume it's OK to enforce JDK and assume JRuby will be
 # provided. MK.
 include_recipe "java"
-include_recipe "ant"
+include_recipe "maven" # JRuby head is now built with Maven
+include_recipe "ant"   # Previous versions of JRuby are built with Ant
+
 
 log "Using Ruby #{RUBY_VERSION}..."
 
@@ -56,7 +58,7 @@ end
 # make sure default Ruby is installed first
 bash "installing #{default_ruby} with RVM arguments #{default_ruby_arguments}" do
   setup.call(self)
-  code   "#{bin_rvm} install #{default_ruby} -j 3 #{default_ruby_arguments} && #{rvm} alias create default #{default_ruby}"
+  code   "#{bin_rvm} install #{default_ruby} --verify-downloads 1 -j 3 #{default_ruby_arguments} && #{rvm} alias create default #{default_ruby}"
   not_if "#{rvm} #{default_ruby} do echo 'Found'"
 end
 
@@ -65,7 +67,7 @@ node.rvm.rubies.
   bash "installing #{rb[:name]} with RVM arguments #{rb[:arguments]}" do
     setup.call(self)
     # another work around for https://github.com/rubinius/rubinius/pull/1759. MK.
-    code "#{rvm} #{rb.fetch(:using, default_ruby)} do #{bin_rvm} install #{rb[:name]} -j 3 #{rb[:arguments]} && #{rvm} all do rvm --force gemset empty && find ~/.rvm/rubies/ -type d -name .git -print | xargs /bin/rm -rf"
+    code "#{rvm} #{rb.fetch(:using, default_ruby)} do #{bin_rvm} install #{rb[:name]} --verify-downloads 1 -j 3 #{rb[:arguments]} && #{rvm} all do rvm --force gemset empty && find ~/.rvm/rubies/ -type d -name .git -print | xargs /bin/rm -rf"
     # with all the Rubies we provide, checking for various directories under .rvm/rubies/* is pretty much impossible without
     # depending on the exact versions provided. So we use this neat technique suggested by mpapis. MK.
     not_if "#{rvm} #{rb[:name]} do echo 'Found'"
